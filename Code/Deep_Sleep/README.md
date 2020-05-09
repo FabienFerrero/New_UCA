@@ -1,2 +1,7 @@
 # New_UCA
-Code for New UCA board
+
+Test for Low Power mode.
+
+Effect of Serial port :
+With serial port : current 350uA
+Without serial port : current 6.5uA
