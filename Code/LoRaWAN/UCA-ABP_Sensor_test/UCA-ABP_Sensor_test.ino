@@ -24,7 +24,7 @@
 
 
 #define debugSerial Serial
-#define SHOW_DEBUGINFO
+//#define SHOW_DEBUGINFO
 #define debugPrintLn(...) { if (debugSerial) debugSerial.println(__VA_ARGS__); }
 #define debugPrint(...) { if (debugSerial) debugSerial.print(__VA_ARGS__); }
 
@@ -69,7 +69,7 @@ static float light;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 300;
+const unsigned TX_INTERVAL = 10;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -85,6 +85,7 @@ const lmic_pinmap lmic_pins = {
 // Functions
 // ---------------------------------------------------------------------------------
 
+extern volatile unsigned long timer0_overflow_count;
 extern volatile unsigned long timer0_millis;
 void addMillis(unsigned long extra_millis) {
   uint8_t oldSREG = SREG;
@@ -118,18 +119,38 @@ void do_sleep(unsigned int sleepyTime) {
   for ( int x = 0; x < eights; x++) {
     // put the processor to sleep for 8 seconds
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+    // LMIC uses micros() to keep track of the duty cycle, so
+      // hack timer0_overflow for a rude adjustment:
+      cli();
+      timer0_overflow_count+= 8 * 64 * clockCyclesPerMicrosecond();
+      sei();
   }
   for ( int x = 0; x < fours; x++) {
     // put the processor to sleep for 4 seconds
     LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_OFF);
+    // LMIC uses micros() to keep track of the duty cycle, so
+      // hack timer0_overflow for a rude adjustment:
+      cli();
+      timer0_overflow_count+= 4 * 64 * clockCyclesPerMicrosecond();
+      sei();
   }
   for ( int x = 0; x < twos; x++) {
     // put the processor to sleep for 2 seconds
     LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);
+    // LMIC uses micros() to keep track of the duty cycle, so
+      // hack timer0_overflow for a rude adjustment:
+      cli();
+      timer0_overflow_count+= 2 * 64 * clockCyclesPerMicrosecond();
+      sei();
   }
   for ( int x = 0; x < ones; x++) {
     // put the processor to sleep for 1 seconds
     LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
+    // LMIC uses micros() to keep track of the duty cycle, so
+      // hack timer0_overflow for a rude adjustment:
+      cli();
+      timer0_overflow_count+=  64 * clockCyclesPerMicrosecond();
+      sei();
   }
   addMillis(sleepyTime * 1000);
 }
@@ -223,8 +244,8 @@ void onEvent (ev_t ev) {
             if (LMIC.txrxFlags & TXRX_ACK)
               Serial.println(F("Received ack"));
             if (LMIC.dataLen) {
-              Serial.println(F("Received "));
-              Serial.println(LMIC.dataLen);
+              Serial.print(F("Received "));
+              Serial.print(LMIC.dataLen);
               Serial.println(F(" bytes of payload"));
               for (int i = 0; i < LMIC.dataLen; i++) {
               if (LMIC.frame[LMIC.dataBeg + i] < 0x10) {
@@ -232,13 +253,15 @@ void onEvent (ev_t ev) {
               }
               Serial.print(LMIC.frame[LMIC.dataBeg + i], HEX);
               }
+              Serial.println("");
             }
             // Schedule next transmission
             Serial.end();
+            os_setTimedCallback(&sendjob,os_getTime()+sec2osticks(1), do_send);
             do_sleep(TX_INTERVAL);
             Serial.begin(115200);
             //os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
-            os_setCallback(&sendjob, do_send);
+            
             break;
         case EV_LOST_TSYNC:
             Serial.println(F("EV_LOST_TSYNC"));
@@ -267,7 +290,7 @@ void do_send(osjob_t* j){
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
-        
+       
 
  updateEnvParameters();
        
@@ -306,7 +329,6 @@ void do_send(osjob_t* j){
     mydata[14] = l & 0xFF;
     
     LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
-
     #ifdef SHOW_DEBUGINFO
     debugPrintLn(F("PQ")); //Packet queued
     Serial.println(F("Packet queued"));
@@ -340,6 +362,15 @@ digitalWrite(7, HIGH);
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
+
+    /* This function is intended to compensate for clock inaccuracy (up to ±10% in this example), 
+    but that also works to compensate for inaccuracies due to software delays. 
+    The downside of this compensation is a longer receive window, which means a higher battery drain. 
+    So if this helps, you might want to try to lower the percentage (i.e. lower the 10 in the above call), 
+    often 1% works well already. */
+    
+    LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
+
     // Set static session parameters. Instead of dynamically establishing a session
     // by joining the network, precomputed session parameters are be provided.
     #ifdef PROGMEM
@@ -356,6 +387,37 @@ digitalWrite(7, HIGH);
     LMIC_setSession (0x1, DEVADDR, NWKSKEY, APPSKEY);
     #endif
 
+    #if defined(CFG_eu868)
+    // Set up the channels used by the Things Network, which corresponds
+    // to the defaults of most gateways. Without this, only three base
+    // channels from the LoRaWAN specification are used, which certainly
+    // works, so it is good for debugging, but can overload those
+    // frequencies, so be sure to configure the full frequency range of
+    // your network here (unless your network autoconfigures them).
+    // Setting up channels should happen after LMIC_setSession, as that
+    // configures the minimal channel set.
+    // NA-US channels 0-71 are configured automatically
+    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
+    LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(3, 867100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(4, 867300000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(5, 867500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
+    // TTN defines an additional channel at 869.525Mhz using SF9 for class B
+    // devices' ping slots. LMIC does not have an easy way to define set this
+    // frequency and support for class B is spotty and untested, so this
+    // frequency is not configured here.
+    #elif defined(CFG_us915)
+    // NA-US channels 0-71 are configured automatically
+    // but only one group of 8 should (a subband) should be active
+    // TTN recommends the second sub band, 1 in a zero based count.
+    // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
+    LMIC_selectSubBand(1);
+    #endif
+
     // Disable link check validation
     LMIC_setLinkCheckMode(0);
 
@@ -370,5 +432,6 @@ digitalWrite(7, HIGH);
 }
 
 void loop() {
+  
     os_runloop_once();
 }
