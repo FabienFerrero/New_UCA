@@ -80,7 +80,7 @@ void os_getArtEui (u1_t* buf) {
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
 // The key shown here is the semtech default key.
-static const u1_t PROGMEM APPKEY[16] = { 0xF0, 0x39, 0xD5, 0xAF, 0xE8, 0x0D, 0x2C, 0xA6, 0x58, 0xBD, 0x12, 0x9D, 0x3E, 0x3D, 0x51, 0x0B };
+static const u1_t PROGMEM APPKEY[16] = { 0xC6, 0x3C, 0xD7, 0x1D, 0x00, 0x30, 0x0E, 0x36, 0xC0, 0xD2, 0xBA, 0x85, 0x0C, 0x36, 0x69, 0x2C };
 void os_getDevKey (u1_t* buf) {
   memcpy_P(buf, APPKEY, 16);
 }
@@ -111,7 +111,7 @@ const lmic_pinmap lmic_pins = {
   .nss = 10,
   .rxtx = LMIC_UNUSED_PIN,
   .rst = 8,
-  .dio = {3, 7, 6},
+  .dio = {3, 6, 6},
 };
 
 // ---------------------------------------------------------------------------------
@@ -218,6 +218,9 @@ void setDataRate() {
   }
 }
 
+
+
+extern volatile unsigned long timer0_overflow_count;
 extern volatile unsigned long timer0_millis;
 void addMillis(unsigned long extra_millis) {
   uint8_t oldSREG = SREG;
@@ -251,18 +254,30 @@ void do_sleep(unsigned int sleepyTime) {
   for ( int x = 0; x < eights; x++) {
     // put the processor to sleep for 8 seconds
     LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+    cli();
+    timer0_overflow_count+= 8 * 64 * clockCyclesPerMicrosecond();
+    sei();
   }
   for ( int x = 0; x < fours; x++) {
     // put the processor to sleep for 4 seconds
     LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_OFF);
+    cli();
+    timer0_overflow_count+= 4 * 64 * clockCyclesPerMicrosecond();
+    sei();
   }
   for ( int x = 0; x < twos; x++) {
     // put the processor to sleep for 2 seconds
     LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);
+    cli();
+    timer0_overflow_count+= 2 * 64 * clockCyclesPerMicrosecond();
+    sei();
   }
   for ( int x = 0; x < ones; x++) {
     // put the processor to sleep for 1 seconds
     LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
+    cli();
+    timer0_overflow_count+= 1 * 64 * clockCyclesPerMicrosecond();
+    sei();
   }
   addMillis(sleepyTime * 1000);
 }
