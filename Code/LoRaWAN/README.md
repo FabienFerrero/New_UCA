@@ -15,7 +15,7 @@ A SF7 Tx including Rx windows has a 2.5s duration with 10mA average current.
 Vietnam is using AS923-2 frequency bands. In comparison to AS923-1, an offset on all the freq. band is requested :
 Group AS923-2: AS923_FREQ_OFFSET_HZ  = -1.80 MHz
 
-![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/AS923-2.png "LoRaWan power")
+![AS923-2](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/AS923-2.png "AS923-2")
 
 
 The code support also the AS923-2 band.
