@@ -25,6 +25,8 @@ Comment "define CFG_EU 1" and uncomment "define CFG_VN 1"
 8 channels have been tested in uplink and downlink with a RAK831 gateway using this config :
 https://github.com/FabienFerrero/New_UCA/blob/master/Misc/global_conf_AS923_2.json
 
+For some strange reason, the gateway is not giving the good frequency, but the 8 channels are ok.
+
 ![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/VN_bands.png "LoRaWan power")
 
 REFERENCE : 
