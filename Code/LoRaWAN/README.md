@@ -1,7 +1,7 @@
 # New_UCA
 Code for New UCA board
 
-![UCA](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/uca.png "UCA")
+![UCA](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/UCA.png "UCA")
 
 LoRaWAN ABP code with deep sleep between packets.
 Current in deep sleep mode is 6.5uA.
