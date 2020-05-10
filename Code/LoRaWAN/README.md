@@ -11,10 +11,8 @@ After the sleep, the time0 counter is updated to avoid additional delay caused b
 
 
 The code support also the AS923-2 bands (used in Vietnam).
-It can be defined in the beginning of the code : comment
->defined CFG_EU 
-and uncomment 
->defined CFG_VN
+It can be defined in the beginning of the code : 
+Comment "define CFG_EU 1" and uncomment "define CFG_VN 1"
 
 8 channels have been tested in uplink and downlink with a RAK831 gateway using this config :
 https://github.com/FabienFerrero/New_UCA/blob/master/Misc/global_conf_AS923_2.json
