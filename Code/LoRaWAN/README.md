@@ -16,6 +16,9 @@ It can be defined in the beginning of the code : comment
 and uncomment 
 >defined CFG_VN
 
+8 channels have been tested in uplink and downlink with a RAK831 gateway using this config :
+https://github.com/FabienFerrero/New_UCA/blob/master/Misc/global_conf_AS923_2.json
+
 ![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/VN_bands.png "LoRaWan power")
 
 REFERENCE : 
