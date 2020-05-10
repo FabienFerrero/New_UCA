@@ -2,10 +2,12 @@
 Code for New UCA board
 
 LoRaWAN ABP code with deep sleep between packets.
+Current in deep sleep mode is 6.5uA.
 
 ![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/lorawan.png "LoRaWan power")
 
 After the sleep, the time0 counter is updated to avoid additional delay caused by duty cycle restriction.
+A SF7 Tx including Rx windows has a 2.5s duration with 10mA average current.
 
 ![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/lorawan2.png "LoRaWan power")
 
