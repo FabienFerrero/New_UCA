@@ -1,6 +1,8 @@
 # New_UCA
 Code for New UCA board
 
+![UCA](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/uca.png "UCA")
+
 LoRaWAN ABP code with deep sleep between packets.
 Current in deep sleep mode is 6.5uA.
 
@@ -9,7 +11,7 @@ Current in deep sleep mode is 6.5uA.
 After the sleep, the time0 counter is updated to avoid additional delay caused by duty cycle restriction.
 A SF7 Tx including Rx windows has a 2.5s duration with 10mA average current.
 
-![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/lorawan2.png "LoRaWan power")
+![LoRaWan power2](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/lorawan2.png "LoRaWan power2")
 
 
 Vietnam is using AS923-2 frequency bands. In comparison to AS923-1, an offset on all the freq. band is requested :
@@ -27,7 +29,7 @@ https://github.com/FabienFerrero/New_UCA/blob/master/Misc/global_conf_AS923_2.js
 
 For some strange reason, the gateway is not giving the good frequency, but the 8 channels are ok.
 
-![LoRaWan power](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/VN_bands.png "LoRaWan power")
+![VN](https://github.com/FabienFerrero/New_UCA/blob/master/Misc/VN_bands.png "VN")
 
 REFERENCE : 
 Adjust Time over flow after sleep based on : 
