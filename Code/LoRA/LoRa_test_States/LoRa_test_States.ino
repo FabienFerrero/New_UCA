@@ -13,7 +13,7 @@
 //#define SHOW_DEBUGINFO
 
 
-int txPower = 10; // Will affect the power consumption in Transmit mode
+int txPower = 2; // Will affect the power consumption in Transmit mode
 
 
 int spreadingFactor = 12; // from 7 to 12
@@ -38,14 +38,14 @@ int interval = 2000;          // interval between sends
 void setup() {
   
   delay(2000); // wait to be sure that measurement with a DC source will start
-  //Serial.begin(9600);                   // initialize serial
+  Serial.begin(9600);                   // initialize serial
  // while (!Serial);
  // Serial.println("LoRa States power Consumption");
 
   // override the default CS, reset, and IRQ pins (optional)
   LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
 pinMode(7, OUTPUT);
-digitalWrite(7, HIGH);
+digitalWrite(7, LOW);
 pinMode(2, INPUT);
 delay(100);
   
@@ -75,20 +75,25 @@ void loop() {
     interval = 10000;    // 2-3 seconds
 	
 	//Serial.println("Normal mode ");
-  delay (3000); // Wait for 3s in Normal mode
+  delay (1000); // Wait for 3s in Normal mode
+
+  Serial.end();
 	
     LoRa.sleep(); // move LoRa transciever in Sleep mode  
 
-   // pinMode(7, LOW);
+ delay(100); 
+    pinMode(7, LOW);
     
     
     //pinMode(13, INPUT);
     
-    delay(100);  
+    
+    
+    delay(100);
     
     do_sleep(5);
 
-  pinMode(7, OUTPUT);
+  
   digitalWrite(7, HIGH);
     receive = 1;
   }

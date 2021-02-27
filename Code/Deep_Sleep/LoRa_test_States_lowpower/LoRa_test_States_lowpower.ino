@@ -12,7 +12,25 @@
 //#define debugSerial Serial
 //#define SHOW_DEBUGINFO
 
+const int csPin = 10;          // LoRa radio chip select
+const int resetPin = 9;       // LoRa radio reset
+const int irqPin = 3;         // change for your board; must be a hardware interrupt pin
 
+
+// Accelerometer provides different Power modes by changing output bit resolution
+#define LOW_POWER
+//#define HIGH_RESOLUTION
+
+// Enable Serial debbug on Serial UART to see registers wrote
+#define KXTJ3_DEBUG Serial
+
+#include "kxtj3-1057.h"
+#include "Wire.h"
+
+float   sampleRate = 6.25;  // HZ - Samples per second - 0.781, 1.563, 3.125, 6.25, 12.5, 25, 50, 100, 200, 400, 800, 1600Hz
+uint8_t accelRange = 2;     // Accelerometer range = 2, 4, 8, 16g
+
+KXTJ3 myIMU(0x0E); // Address can be 0x0E or 0x0F
 
 
 void setup() {
@@ -22,30 +40,32 @@ void setup() {
  // while (!Serial);
  // Serial.println("LoRa States power Consumption");
   pinMode(7, OUTPUT);
-digitalWrite(7, HIGH);
+digitalWrite(7, HIGH); 
 
- 
+// override the default CS, reset, and IRQ pins (optional)
+ LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
+
+  if (!LoRa.begin(870E6)) {             // initialize ratio at 870 MHz to limit interferance with LoRaWan
+   // Serial.println("LoRa init failed. Check your connections.");
+    while (true);                       // if failed, do nothing
+  }
+
+   myIMU.standby( true );
+
 }
 
 void loop() {
-  Serial.begin(9600);     
+ // Serial.begin(9600);  
+  digitalWrite(7, LOW);   
     do_sleep(2);
   //  Serial.end; 
 Serial.end();
-      
-    do_sleep(2);
+delay(100);
+LoRa.sleep();
 
-
-    
-//    receive = 1;
-//  }
-//
-//  // parse for a packet, and call onReceive with the result:
-//  if (receive == 1)
-//  {
-//  Serial.println("Receiving State ");
-//  receive = 0;}
-//  onReceive(LoRa.parsePacket());
+delay(100);
+digitalWrite(7, LOW);      
+    do_sleep(2);    
 }
 
 
