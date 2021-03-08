@@ -36,7 +36,8 @@ long freq_min=863e6;
 long max_freq=freq; // freq with max RSSI
 long min_freq=freq; // freq with max RSSI
 
-bool Pushdetected = false; // reset peak freq
+bool Pushdetected = false; // Change mode
+bool Pushdetected2 = false; // change LED intensity
 
 int counter = -1; // number of received packet since the last init
 int index = -1;
@@ -55,10 +56,12 @@ int mode = 0; //define the mode used :  0:channel sounding 1:live antenna demo
 #include <FastLED.h>
 #define LED_PIN     4
 #define NUM_LEDS    21
-#define BRIGHTNESS  32
 #define LED_TYPE    WS2812
 #define COLOR_ORDER GRB
 #define UPDATES_PER_SECOND 100
+
+int BRIGHTNESS = 16 ;
+
 CRGB leds[NUM_LEDS];
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
@@ -78,6 +81,8 @@ fill_solid( leds, NUM_LEDS, CRGB(greenValue,redValue,blueValue));
 
 
 void rssi2led(int RSSI){
+
+  if(RSSI > -10) {RSSI = -10;} // Set max to -10dBm
 
   int LED = (RSSI+offset)/norm;
   int hue = 360 - ((RSSI+offset)*18/norm);
@@ -116,6 +121,9 @@ void setup() {
 
   pinMode(2, INPUT_PULLUP);
   pinMode(8, INPUT_PULLUP);
+  pinMode(7, OUTPUT);
+  digitalWrite(7, HIGH);
+  
   
   
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
@@ -148,8 +156,12 @@ void setup() {
 
 void loop() {
 
-  if (digitalRead(8)==LOW|| digitalRead(2)==LOW) { 
+  if (digitalRead(2)==LOW) { 
     Pushdetected = true;    
+    }
+
+    if (digitalRead(8)==LOW) { 
+    Pushdetected2 = true;    
     }
 
    
@@ -158,7 +170,8 @@ void loop() {
     Pushdetected = false;
     counter = -1; // start with count < 0 to add a small delay before the start of the measurement
     index = 0;
-    if(mode ==2){
+
+    if(mode ==3){
       mode = 0;
       Serial.println("Mode 0");
       offset = 120;
@@ -167,21 +180,30 @@ void loop() {
     setColor(BRIGHTNESS, 00, 0); //GREEN  
     FastLED.show(); 
     delay (1000);
+    }    
+    if(mode ==0){
+      mode = 1;
+      Serial.println("Mode 1");
+      offset = 120;
+      buff = 1;
+    norm = 5;
+    setColor(BRIGHTNESS, 00, BRIGHTNESS); //Yellow  
+    FastLED.show(); 
+    delay (1000);
     }
-    else if (mode==1){
-    mode = 2; 
-    Serial.println("Mode 2"); 
+    else if (mode==2){
+    mode = 3; 
+    Serial.println("Mode 3"); 
     offset = 80;
     norm = 2;
     buff = 1;
     setColor(00, BRIGHTNESS, 00); //Blue  
     FastLED.show(); 
     delay (1000);
-    }
-    
+    }    
     else {
-    mode = 1;
-    Serial.println("Mode 1");  
+    mode = 2;
+    Serial.println("Mode 2");  
     offset = 70;
     norm = 2;
     buff = 2;
@@ -190,14 +212,24 @@ void loop() {
     delay (1000);
       }
     }
+
+if(Pushdetected2){ // Change LED intensity
+    Pushdetected2 = false;
+BRIGHTNESS = BRIGHTNESS + 32;
+if (BRIGHTNESS > 150) { 
+  BRIGHTNESS = 16;
+    }
+    rssi2led(average_RSSI);
+    delay(1000);
+}
+    
   
   // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-    // received a packets
-    
-        
+    // received a packets      
     counter++;
+    
     if (index<buff){
     index++;}
 
@@ -239,25 +271,25 @@ void loop() {
       }
     average_RSSI = average_RSSI / (index+1);
     
-    sqDevSum=0;
-    for( int i=0; i<=counter; i++ ) {
-      sqDevSum += (float) pow(average_RSSI - RSSI_array[i], 2);
-    
-      }
-    sqDevSum = sqrt(sqDevSum /counter);
+//    sqDevSum=0;
+//    for( int i=0; i<=counter; i++ ) {
+//      sqDevSum += (float) pow(average_RSSI - RSSI_array[i], 2);
+//    
+//      }
+//    sqDevSum = sqrt(sqDevSum /counter);
 
-    
-
-     if(RSSI > max_RSSI && counter > 0){
-      max_RSSI=RSSI;
-      max_freq=freq;
-      }
-
-  if(RSSI < min_RSSI && counter > 0){
-      min_RSSI=RSSI;
-      min_freq=freq;
-      }    
-    // print RSSI of packet
+//    
+//
+//     if(RSSI > max_RSSI && counter > 0){
+//      max_RSSI=RSSI;
+//      max_freq=freq;
+//      }
+//
+//  if(RSSI < min_RSSI && counter > 0){
+//      min_RSSI=RSSI;
+//      min_freq=freq;
+//      }    
+//    // print RSSI of packet
            
       Serial.print(freq);
       long minfreq_MHz= min_freq / 1e6; // freq in MHz

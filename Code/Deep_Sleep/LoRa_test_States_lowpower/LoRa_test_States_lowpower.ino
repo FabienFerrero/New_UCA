@@ -13,7 +13,7 @@
 //#define SHOW_DEBUGINFO
 
 const int csPin = 10;          // LoRa radio chip select
-const int resetPin = 9;       // LoRa radio reset
+const int resetPin = 8;       // LoRa radio reset
 const int irqPin = 3;         // change for your board; must be a hardware interrupt pin
 
 
@@ -24,23 +24,29 @@ const int irqPin = 3;         // change for your board; must be a hardware inter
 // Enable Serial debbug on Serial UART to see registers wrote
 #define KXTJ3_DEBUG Serial
 
-#include "kxtj3-1057.h"
+//#include "kxtj3-1057.h"
 #include "Wire.h"
 
 float   sampleRate = 6.25;  // HZ - Samples per second - 0.781, 1.563, 3.125, 6.25, 12.5, 25, 50, 100, 200, 400, 800, 1600Hz
 uint8_t accelRange = 2;     // Accelerometer range = 2, 4, 8, 16g
 
-KXTJ3 myIMU(0x0E); // Address can be 0x0E or 0x0F
+//KXTJ3 myIMU(0x0E); // Address can be 0x0E or 0x0F
 
 
 void setup() {
   
-  delay(2000); // wait to be sure that measurement with a DC source will start
+  delay(1000); // wait to be sure that measurement with a DC source will start
   Serial.begin(9600);                   // initialize serial
  // while (!Serial);
  // Serial.println("LoRa States power Consumption");
   pinMode(7, OUTPUT);
+ // pinMode(2, OUTPUT);
 digitalWrite(7, HIGH); 
+//digitalWrite(2, LOW); 
+// pinMode(3, OUTPUT);
+//digitalWrite(7, HIGH); 
+//digitalWrite(3, LOW); 
+
 
 // override the default CS, reset, and IRQ pins (optional)
  LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
@@ -50,13 +56,17 @@ digitalWrite(7, HIGH);
     while (true);                       // if failed, do nothing
   }
 
-   myIMU.standby( true );
+ //  myIMU.standby( true );
 
 }
 
 void loop() {
  // Serial.begin(9600);  
-  digitalWrite(7, LOW);   
+ digitalWrite(7, HIGH); 
+ delay(100);
+ LoRa.sleep(); 
+delay(100);
+  
     do_sleep(2);
   //  Serial.end; 
 Serial.end();
@@ -64,7 +74,7 @@ delay(100);
 LoRa.sleep();
 
 delay(100);
-digitalWrite(7, LOW);      
+digitalWrite(7, HIGH);      
     do_sleep(2);    
 }
 
