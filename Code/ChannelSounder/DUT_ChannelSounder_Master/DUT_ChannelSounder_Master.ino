@@ -50,7 +50,7 @@ int offset = 120; // offset for RSSI
 int norm = 5; // Normalization value
 int buff = 20; // Buffer size for measurement
 float sqDevSum=0;
-int mode = 0; //define the mode used :  0:channel sounding 1:live antenna demo 
+int mode = 0; //define the mode used :  0:channel sounding with averaging 1: channel sounding w/o averaging 3:live antenna demo 4:
 
 // LED control
 #include <FastLED.h>
@@ -170,19 +170,10 @@ void loop() {
     Pushdetected = false;
     counter = -1; // start with count < 0 to add a small delay before the start of the measurement
     index = 0;
+    mode = mode+1;
+    if (mode==4) {mode=0;}
 
-    if(mode ==3){
-      mode = 0;
-      Serial.println("Mode 0");
-      offset = 120;
-      buff = 20;
-    norm = 5;
-    setColor(BRIGHTNESS, 00, 0); //GREEN  
-    FastLED.show(); 
-    delay (1000);
-    }    
-    if(mode ==0){
-      mode = 1;
+    if(mode ==1){
       Serial.println("Mode 1");
       offset = 120;
       buff = 1;
@@ -191,8 +182,16 @@ void loop() {
     FastLED.show(); 
     delay (1000);
     }
-    else if (mode==2){
-    mode = 3; 
+    if(mode ==0){
+     Serial.println("Mode 0");
+     offset = 120;
+      buff = 20;
+    norm = 5;
+    setColor(BRIGHTNESS, 00, 0); //GREEN  
+    FastLED.show(); 
+    delay (1000);
+    }       
+    else if (mode==3){
     Serial.println("Mode 3"); 
     offset = 80;
     norm = 2;
@@ -201,8 +200,7 @@ void loop() {
     FastLED.show(); 
     delay (1000);
     }    
-    else {
-    mode = 2;
+    else if (mode==2) {
     Serial.println("Mode 2");  
     offset = 70;
     norm = 2;
