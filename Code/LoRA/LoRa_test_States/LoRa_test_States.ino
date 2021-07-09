@@ -9,8 +9,8 @@
 #include <LoRa.h>
 #include "LowPower.h"
 
-//#define debugSerial Serial
-//#define SHOW_DEBUGINFO
+#define debugSerial Serial
+#define SHOW_DEBUGINFO
 
 
 int txPower = 2; // Will affect the power consumption in Transmit mode
@@ -46,7 +46,7 @@ void setup() {
   LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
 pinMode(7, OUTPUT);
 digitalWrite(7, LOW);
-pinMode(2, INPUT);
+//pinMode(2, INPUT);
 delay(100);
   
 
@@ -64,7 +64,7 @@ delay(100);
 }
 
 void loop() {
- // digitalWrite(7, HIGH);
+ digitalWrite(7, HIGH);
   
   if (millis() - lastSendTime > interval) {
     String message = "HeLoRa World!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";   // send a message
@@ -76,14 +76,15 @@ void loop() {
 	
 	//Serial.println("Normal mode ");
   delay (1000); // Wait for 3s in Normal mode
+Serial.println("Go to sleep");
 
   Serial.end();
 	
     LoRa.sleep(); // move LoRa transciever in Sleep mode  
 
  delay(100); 
-    pinMode(7, LOW);
-    
+    //pinMode(7, LOW);
+    digitalWrite(7, LOW);
     
     //pinMode(13, INPUT);
     
@@ -93,8 +94,9 @@ void loop() {
     
     do_sleep(5);
 
-  
+  Serial.begin(9600);  
   digitalWrite(7, HIGH);
+  Serial.println("receive");
     receive = 1;
   }
 
