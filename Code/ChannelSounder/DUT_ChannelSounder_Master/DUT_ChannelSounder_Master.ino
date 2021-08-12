@@ -120,7 +120,7 @@ void setup() {
   delay(1000);
 
   pinMode(2, INPUT_PULLUP);
-  pinMode(8, INPUT_PULLUP);
+  pinMode(3, INPUT_PULLUP);
   pinMode(7, OUTPUT);
   digitalWrite(7, HIGH);
   
@@ -156,11 +156,11 @@ void setup() {
 
 void loop() {
 
-  if (digitalRead(2)==LOW) { 
+  if (digitalRead(3)==LOW) { 
     Pushdetected = true;    
     }
 
-    if (digitalRead(8)==LOW) { 
+    if (digitalRead(2)==LOW) { 
     Pushdetected2 = true;    
     }
 
